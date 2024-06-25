@@ -1,17 +1,14 @@
 import PropTypes from "prop-types";
 import { useState, useMemo } from "react";
 
-function Question({ question, answers, title, onAnswered }) {
+function Question({ question, answers, title, onAnswered, isAnswered }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
 
   const handleAnswerClick = (isCorrect) => {
-    setSelectedAnswer(isCorrect);
-
-    // Wait for 1 second before showing the next question
-    setTimeout(() => {
+    if (!isAnswered) {
+      setSelectedAnswer(isCorrect);
       onAnswered(isCorrect);
-      setSelectedAnswer(null);
-    }, 1000);
+    }
   };
 
   // Randomize the order of the answers
@@ -23,24 +20,27 @@ function Question({ question, answers, title, onAnswered }) {
     <div className="question-container">
       <h2>{question}</h2>
       <p>{title}</p>
-      <div className="button-container">
-        {randomizedAnswers.map((answer, index) => (
-          <button
-            key={index}
-            className={`button ${
-              selectedAnswer === null
-                ? ""
-                : selectedAnswer === answer.isCorrect
-                ? "correct"
-                : "wrong"
-            }`}
-            onClick={() => handleAnswerClick(answer.isCorrect)}
-            disabled={selectedAnswer !== null}
-          >
-            {answer.text}
-          </button>
-        ))}
-      </div>
+      {!isAnswered ? (
+        <div className="button-container">
+          {randomizedAnswers.map((answer, index) => (
+            <button
+              key={index}
+              className="button"
+              onClick={() => handleAnswerClick(answer.isCorrect)}
+            >
+              {answer.text}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="answer-feedback">
+          {selectedAnswer ? (
+            <p className="correct">Correct!</p>
+          ) : (
+            <p className="wrong">Incorrect</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -56,6 +56,7 @@ Question.propTypes = {
   ).isRequired,
   title: PropTypes.string.isRequired,
   onAnswered: PropTypes.func.isRequired,
+  isAnswered: PropTypes.bool.isRequired,
 };
 
 export default Question;

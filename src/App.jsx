@@ -4,6 +4,7 @@ import Question from "./Questions.jsx";
 import questions from "./disney-trivia-questions.jsx";
 
 const categories = ["Mix", "Characters", "Movies", "Settings", "Songs"];
+const QUIZ_LENGTH = 10;
 
 function shuffleArray(array) {
   const shuffled = [...array];
@@ -19,10 +20,12 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState("Mix");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [attemptedQuestions, setAttemptedQuestions] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState({});
 
   useEffect(() => {
     if (questions) {
-      setShuffledQuestions(shuffleArray(questions));
+      setShuffledQuestions(shuffleArray(questions).slice(0, QUIZ_LENGTH));
     }
   }, []);
 
@@ -30,17 +33,29 @@ export default function App() {
     ? shuffledQuestions
     : shuffledQuestions.filter(q => q.category === selectedCategory);
 
-  const handleNextQuestion = (isCorrect) => {
-    if (isCorrect) {
-      setScore(prevScore => prevScore + 1);
+  const handleAnswer = (isCorrect) => {
+    if (!(currentQuestionIndex in answeredQuestions)) {
+      setAttemptedQuestions(prev => prev + 1);
+      if (isCorrect) {
+        setScore(prevScore => prevScore + 1);
+      }
+      setAnsweredQuestions(prev => ({ ...prev, [currentQuestionIndex]: isCorrect }));
     }
-    setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+  };
+
+  const moveQuestion = (direction) => {
+    setCurrentQuestionIndex(prevIndex => {
+      const newIndex = prevIndex + direction;
+      return Math.max(0, Math.min(newIndex, filteredQuestions.length - 1));
+    });
   };
 
   const resetQuiz = () => {
-    setShuffledQuestions(shuffleArray(questions));
+    setShuffledQuestions(shuffleArray(questions).slice(0, QUIZ_LENGTH));
     setCurrentQuestionIndex(0);
     setScore(0);
+    setAttemptedQuestions(0);
+    setAnsweredQuestions({});
   };
 
   if (!questions || questions.length === 0) {
@@ -58,8 +73,7 @@ export default function App() {
             className={`badge ${category === selectedCategory ? 'selected' : ''}`}
             onClick={() => {
               setSelectedCategory(category);
-              setCurrentQuestionIndex(0);
-              setScore(0);
+              resetQuiz();
             }}
           >
             {category}
@@ -78,20 +92,30 @@ export default function App() {
       </div>
       <div className="content">
         {currentQuestion ? (
-          <Question
-            key={currentQuestionIndex}
-            {...currentQuestion}
-            onAnswered={handleNextQuestion}
-          />
+          <>
+            <Question
+              key={currentQuestionIndex}
+              {...currentQuestion}
+              onAnswered={handleAnswer}
+              isAnswered={currentQuestionIndex in answeredQuestions}
+            />
+            <div className="navigation">
+              <button onClick={() => moveQuestion(-1)} disabled={currentQuestionIndex === 0}>Previous</button>
+              <button onClick={() => moveQuestion(1)} disabled={currentQuestionIndex === filteredQuestions.length - 1}>Next</button>
+            </div>
+          </>
         ) : (
           <div className="quiz-end">
             <h2>Quiz Completed!</h2>
-            <p>Your score: {score} out of {filteredQuestions.length}</p>
+            <p>Your score: {score} out of {attemptedQuestions}</p>
             <button onClick={resetQuiz}>Start Over</button>
           </div>
         )}
         <div className="progress">
           Question {currentQuestionIndex + 1} of {filteredQuestions.length}
+        </div>
+        <div className="score">
+          Score: {score}/{attemptedQuestions} correct
         </div>
       </div>
     </div>
