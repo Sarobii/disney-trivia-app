@@ -15,6 +15,13 @@ function shuffleArray(array) {
   return shuffled;
 }
 
+function shuffleQuestions(questions) {
+  return questions.map((question) => ({
+    ...question,
+    answers: shuffleArray(question.answers),
+  }));
+}
+
 export default function App() {
   const [shuffledQuestions, setShuffledQuestions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("Mix");
@@ -25,33 +32,41 @@ export default function App() {
 
   useEffect(() => {
     if (questions) {
-      setShuffledQuestions(shuffleArray(questions).slice(0, QUIZ_LENGTH));
+      setShuffledQuestions(
+        shuffleQuestions(shuffleArray(questions)).slice(0, QUIZ_LENGTH)
+      );
     }
   }, []);
 
-  const filteredQuestions = selectedCategory === "Mix"
-    ? shuffledQuestions
-    : shuffledQuestions.filter(q => q.category === selectedCategory);
+  const filteredQuestions =
+    selectedCategory === "Mix"
+      ? shuffledQuestions
+      : shuffledQuestions.filter((q) => q.category === selectedCategory);
 
-  const handleAnswer = (isCorrect) => {
+  const handleAnswer = (isCorrect, selectedAnswerIndex) => {
     if (!(currentQuestionIndex in answeredQuestions)) {
-      setAttemptedQuestions(prev => prev + 1);
+      setAttemptedQuestions((prev) => prev + 1);
       if (isCorrect) {
-        setScore(prevScore => prevScore + 1);
+        setScore((prevScore) => prevScore + 1);
       }
-      setAnsweredQuestions(prev => ({ ...prev, [currentQuestionIndex]: isCorrect }));
+      setAnsweredQuestions((prev) => ({
+        ...prev,
+        [currentQuestionIndex]: { isCorrect, selectedAnswerIndex },
+      }));
     }
   };
 
   const moveQuestion = (direction) => {
-    setCurrentQuestionIndex(prevIndex => {
+    setCurrentQuestionIndex((prevIndex) => {
       const newIndex = prevIndex + direction;
       return Math.max(0, Math.min(newIndex, filteredQuestions.length - 1));
     });
   };
 
   const resetQuiz = () => {
-    setShuffledQuestions(shuffleArray(questions).slice(0, QUIZ_LENGTH));
+    setShuffledQuestions(
+      shuffleQuestions(shuffleArray(questions)).slice(0, QUIZ_LENGTH)
+    );
     setCurrentQuestionIndex(0);
     setScore(0);
     setAttemptedQuestions(0);
@@ -63,6 +78,7 @@ export default function App() {
   }
 
   const currentQuestion = filteredQuestions[currentQuestionIndex];
+  const currentAnswer = answeredQuestions[currentQuestionIndex];
 
   return (
     <div className="App">
@@ -70,7 +86,9 @@ export default function App() {
         {categories.map((category) => (
           <div
             key={category}
-            className={`badge ${category === selectedCategory ? 'selected' : ''}`}
+            className={`badge ${
+              category === selectedCategory ? "selected" : ""
+            }`}
             onClick={() => {
               setSelectedCategory(category);
               resetQuiz();
@@ -90,6 +108,7 @@ export default function App() {
           <h1 className="fade-in">Trivia!</h1>
         </div>
       </div>
+
       <div className="content">
         {currentQuestion ? (
           <>
@@ -97,17 +116,30 @@ export default function App() {
               key={currentQuestionIndex}
               {...currentQuestion}
               onAnswered={handleAnswer}
-              isAnswered={currentQuestionIndex in answeredQuestions}
+              isAnswered={currentAnswer !== undefined}
+              selectedAnswerIndex={currentAnswer?.selectedAnswerIndex}
             />
             <div className="navigation">
-              <button onClick={() => moveQuestion(-1)} disabled={currentQuestionIndex === 0}>Previous</button>
-              <button onClick={() => moveQuestion(1)} disabled={currentQuestionIndex === filteredQuestions.length - 1}>Next</button>
+              <button
+                onClick={() => moveQuestion(-1)}
+                disabled={currentQuestionIndex === 0}
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => moveQuestion(1)}
+                disabled={currentQuestionIndex === filteredQuestions.length - 1}
+              >
+                Next
+              </button>
             </div>
           </>
         ) : (
           <div className="quiz-end">
             <h2>Quiz Completed!</h2>
-            <p>Your score: {score} out of {attemptedQuestions}</p>
+            <p>
+              Your score: {score} out of {attemptedQuestions}
+            </p>
             <button onClick={resetQuiz}>Start Over</button>
           </div>
         )}

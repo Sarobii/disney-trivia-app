@@ -1,43 +1,42 @@
 import PropTypes from "prop-types";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 
-function Question({ question, answers, title, onAnswered, isAnswered }) {
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+function Question({ question, answers, title, onAnswered, isAnswered, selectedAnswerIndex }) {
+  const [localSelectedAnswerIndex, setLocalSelectedAnswerIndex] = useState(null);
 
-  const handleAnswerClick = (isCorrect) => {
+  const handleAnswerClick = (isCorrect, index) => {
     if (!isAnswered) {
-      setSelectedAnswer(isCorrect);
-      onAnswered(isCorrect);
+      setLocalSelectedAnswerIndex(index);
+      onAnswered(isCorrect, index);
     }
   };
 
-  // Randomize the order of the answers
-  const randomizedAnswers = useMemo(() => {
-    return [...answers].sort(() => Math.random() - 0.5);
-  }, [answers]);
+  const displayedAnswerIndex = isAnswered ? selectedAnswerIndex : localSelectedAnswerIndex;
 
   return (
     <div className="question-container">
       <h2>{question}</h2>
       <p>{title}</p>
-      {!isAnswered ? (
-        <div className="button-container">
-          {randomizedAnswers.map((answer, index) => (
-            <button
-              key={index}
-              className="button"
-              onClick={() => handleAnswerClick(answer.isCorrect)}
-            >
-              {answer.text}
-            </button>
-          ))}
-        </div>
-      ) : (
+      <div className="button-container">
+        {answers.map((answer, index) => (
+          <button
+            key={index}
+            className={`button ${isAnswered && index === displayedAnswerIndex ? (answer.isCorrect ? 'correct' : 'wrong') : ''}`}
+            onClick={() => handleAnswerClick(answer.isCorrect, index)}
+            disabled={isAnswered}
+          >
+            {answer.text}
+          </button>
+        ))}
+      </div>
+      {isAnswered && (
         <div className="answer-feedback">
-          {selectedAnswer ? (
+          {answers[displayedAnswerIndex].isCorrect ? (
             <p className="correct">Correct!</p>
           ) : (
-            <p className="wrong">Incorrect</p>
+            <p className="wrong">
+              Incorrect. The correct answer was: {answers.find(a => a.isCorrect).text}
+            </p>
           )}
         </div>
       )}
@@ -57,6 +56,7 @@ Question.propTypes = {
   title: PropTypes.string.isRequired,
   onAnswered: PropTypes.func.isRequired,
   isAnswered: PropTypes.bool.isRequired,
+  selectedAnswerIndex: PropTypes.number,
 };
 
 export default Question;
