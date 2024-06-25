@@ -1,40 +1,26 @@
 import PropTypes from "prop-types";
-import React from "react";
+import { useState, useMemo } from "react";
 
-function Question({ question, answers, title }) {
-  const [selectedAnswer, setSelectedAnswer] = React.useState(null);
-  const [totalQuestions, setTotalQuestions] = React.useState(0);
-  const [score, setScore] = React.useState(0);
+function Question({ question, answers, title, onAnswered }) {
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
 
   const handleAnswerClick = (isCorrect) => {
     setSelectedAnswer(isCorrect);
-    setTotalQuestions((prevTotalQuestions) => prevTotalQuestions + 1);
-
-    if (isCorrect) {
-      setScore((prevScore) => prevScore + 1);
-    }
 
     // Wait for 1 second before showing the next question
     setTimeout(() => {
+      onAnswered(isCorrect);
       setSelectedAnswer(null);
     }, 1000);
   };
 
-  // Randomize the order of the correct answers
-  const randomizedAnswers = React.useMemo(() => {
-    const shuffledAnswers = [...answers];
-    for (let i = shuffledAnswers.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledAnswers[i], shuffledAnswers[j]] = [
-        shuffledAnswers[j],
-        shuffledAnswers[i],
-      ];
-    }
-    return shuffledAnswers;
+  // Randomize the order of the answers
+  const randomizedAnswers = useMemo(() => {
+    return [...answers].sort(() => Math.random() - 0.5);
   }, [answers]);
 
   return (
-    <div>
+    <div className="question-container">
       <h2>{question}</h2>
       <p>{title}</p>
       <div className="button-container">
@@ -49,15 +35,12 @@ function Question({ question, answers, title }) {
                 : "wrong"
             }`}
             onClick={() => handleAnswerClick(answer.isCorrect)}
+            disabled={selectedAnswer !== null}
           >
             {answer.text}
           </button>
         ))}
       </div>
-      <p>
-        Total Questions: {totalQuestions} / {answers.length}
-      </p>
-      <p>Correct Answers: {score}</p>
     </div>
   );
 }
@@ -72,6 +55,7 @@ Question.propTypes = {
     })
   ).isRequired,
   title: PropTypes.string.isRequired,
+  onAnswered: PropTypes.func.isRequired,
 };
 
 export default Question;
