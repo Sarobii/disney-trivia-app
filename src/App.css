@@ -121,15 +121,31 @@ h1 {
 
 .content {
   padding: 2rem;
+  position: relative;
+  min-height: 400px; /* Adjust as needed */
 }
 
 .question-container {
   margin-bottom: 2rem;
 }
 
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  padding: 0.8rem;
+  text-align: center;
+}
+
 .button-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -165,9 +181,11 @@ h1 {
 }
 
 .progress {
-  margin-top: 1rem;
-  font-style: italic;
-  color: #666;
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0;
+  right: 0;
+  text-align: center;
 }
 
 .quiz-end {
@@ -191,9 +209,13 @@ h1 {
 }
 
 .navigation {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
-  margin-top: 1rem;
+  padding: 0 2rem;
 }
 
 .navigation button {
@@ -221,6 +243,22 @@ h1 {
   color: var(--primary-color);
 }
 
+.score-info, .attempted-info {
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  border: 2px solid black;
+  padding: 0.5rem;
+  border-radius: 5px;
+}
+
+.final-score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin: 1rem 0;
+}
+
 .answer-feedback {
   margin-top: 1rem;
   font-weight: bold;
@@ -238,3 +276,4 @@ h1 {
 .answer-feedback .wrong {
   background-color: #cd4137;
 }
+

@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 
-function Question({ question, answers, onAnswered, isAnswered, selectedAnswerIndex }) {
+function Question({ answers, onAnswered, isAnswered, selectedAnswerIndex }) {
   const [localSelectedAnswerIndex, setLocalSelectedAnswerIndex] = useState(null);
 
   const handleAnswerClick = (isCorrect, index) => {
@@ -15,7 +15,6 @@ function Question({ question, answers, onAnswered, isAnswered, selectedAnswerInd
 
   return (
     <div className="question-container">
-      <h2>{question}</h2>
       <div className="button-container">
         {answers.map((answer, index) => (
           <button

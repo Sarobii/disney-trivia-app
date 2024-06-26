@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import Question from "./Questions.jsx";
 import questions from "./disney-trivia-questions.jsx";
+import Confetti from 'react-confetti';
 
 const categories = ["Mix", "Characters", "Movies", "Settings", "Songs"];
 const QUIZ_LENGTH = 10;
@@ -29,8 +30,14 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [attemptedQuestions, setAttemptedQuestions] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState({});
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  
 
   useEffect(() => {
+    generateQuestions();
+  }, []);
+
+  const generateQuestions = () => {
     const shuffledQuestions = shuffleQuestions(shuffleArray(questions));
     const categoryQuestionsObj = categories.reduce((acc, category) => {
       if (category === "Mix") {
@@ -42,7 +49,7 @@ export default function App() {
       return acc;
     }, {});
     setCategoryQuestions(categoryQuestionsObj);
-  }, []);
+  };
 
   const handleAnswer = (isCorrect, selectedAnswerIndex) => {
     if (!(currentQuestionIndex in answeredQuestions)) {
@@ -54,6 +61,10 @@ export default function App() {
         ...prev,
         [currentQuestionIndex]: { isCorrect, selectedAnswerIndex },
       }));
+
+      if (Object.keys(answeredQuestions).length + 1 === QUIZ_LENGTH) {
+        setQuizCompleted(true);
+      }
     }
   };
 
@@ -69,6 +80,8 @@ export default function App() {
     setScore(0);
     setAttemptedQuestions(0);
     setAnsweredQuestions({});
+    setQuizCompleted(false);
+    generateQuestions();
   };
 
   const currentQuestion = categoryQuestions[selectedCategory]?.[currentQuestionIndex];
@@ -104,8 +117,22 @@ export default function App() {
       </div>
 
       <div className="content">
-        {currentQuestion ? (
+        {quizCompleted ? (
+          <div className="quiz-end">
+            <h2>Quiz Completed!</h2>
+            <Confetti />
+            <p className="final-score">
+              Your final score: {score} out of {QUIZ_LENGTH}
+            </p>
+            <button onClick={resetQuiz}>Start New Quiz</button>
+          </div>
+        ) : currentQuestion ? (
           <>
+            <div className="question-header">
+              <div className="score-info">Score: {score}</div>
+              <h2>{currentQuestion.question}</h2>
+              <div className="attempted-info">Attempted: {attemptedQuestions}</div>
+            </div>
             <Question
               key={currentQuestionIndex}
               {...currentQuestion}
@@ -129,19 +156,10 @@ export default function App() {
             </div>
           </>
         ) : (
-          <div className="quiz-end">
-            <h2>Quiz Completed!</h2>
-            <p>
-              Your score: {score} out of {attemptedQuestions}
-            </p>
-            <button onClick={resetQuiz}>Start Over</button>
-          </div>
+          <div>Loading questions...</div>
         )}
         <div className="progress">
           Question {currentQuestionIndex + 1} of {QUIZ_LENGTH}
-        </div>
-        <div className="score">
-          Score: {score}/{attemptedQuestions} correct
         </div>
       </div>
     </div>
