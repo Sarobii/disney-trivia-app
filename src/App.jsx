@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-import Question from "./Questions.jsx";
-import questions from "./disney-trivia-questions.jsx";
+import Question from "../Components/Questions.jsx";
+import questions from "../Components/disney-trivia-questions.jsx";
 import Confetti from 'react-confetti';
 
 const categories = ["Mix", "Characters", "Movies", "Settings", "Songs"];
