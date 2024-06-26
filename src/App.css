@@ -209,6 +209,7 @@ h2 {
   background-color: var(--secondary-color);
 }
 
+
 .navigation {
   position: absolute;
   bottom: 1rem;
@@ -227,6 +228,23 @@ h2 {
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s;
+  position: relative;
+  width: 100px;  /* Increased width for larger clickable area */
+  height: 40px;  /* Increased height for larger clickable area */
+}
+
+.navigation button::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+}
+
+.navigation button span {
+  position: relative;
+  z-index: 5;
 }
 
 .navigation button:hover:not(:disabled) {

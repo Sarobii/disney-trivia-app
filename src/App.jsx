@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import Question from "../Components/Questions.jsx";
 import questions from "../Components/disney-trivia-questions.jsx";
-import Confetti from 'react-confetti';
+import Confetti from "react-confetti";
 
 const categories = ["Mix", "Characters", "Movies", "Settings", "Songs"];
 const QUIZ_LENGTH = 10;
@@ -32,7 +32,6 @@ export default function App() {
   const [attemptedQuestions, setAttemptedQuestions] = useState(0); // Number of questions attempted
   const [answeredQuestions, setAnsweredQuestions] = useState({}); // Previously answered questions
   const [quizCompleted, setQuizCompleted] = useState(false); // Quiz completion status
-  
 
   // Generate questions for the current category when the component mounts
   useEffect(() => {
@@ -46,7 +45,9 @@ export default function App() {
       if (category === "Mix") {
         acc[category] = shuffledQuestions.slice(0, QUIZ_LENGTH); // Get QUIZ_LENGTH questions for mix category
       } else {
-        const filteredQuestions = shuffledQuestions.filter(q => q.category === category); // Filter questions by category
+        const filteredQuestions = shuffledQuestions.filter(
+          (q) => q.category === category
+        ); // Filter questions by category
         acc[category] = filteredQuestions.slice(0, QUIZ_LENGTH); // Get QUIZ_LENGTH questions for other categories
       }
       return acc;
@@ -56,17 +57,21 @@ export default function App() {
 
   // Handle answer selection
   const handleAnswer = (isCorrect, selectedAnswerIndex) => {
-    if (!(currentQuestionIndex in answeredQuestions)) { // If question not already answered
+    if (!(currentQuestionIndex in answeredQuestions)) {
+      // If question not already answered
       setAttemptedQuestions((prev) => prev + 1); // Increment attempted questions count
-      if (isCorrect) { // If answer is correct
+      if (isCorrect) {
+        // If answer is correct
         setScore((prevScore) => prevScore + 1); // Increment score
       }
-      setAnsweredQuestions((prev) => ({ // Update answered questions state
+      setAnsweredQuestions((prev) => ({
+        // Update answered questions state
         ...prev,
         [currentQuestionIndex]: { isCorrect, selectedAnswerIndex },
       }));
 
-      if (Object.keys(answeredQuestions).length + 1 === QUIZ_LENGTH) { // If all questions answered
+      if (Object.keys(answeredQuestions).length + 1 === QUIZ_LENGTH) {
+        // If all questions answered
         setQuizCompleted(true); // Set quiz completion status
       }
     }
@@ -91,7 +96,8 @@ export default function App() {
   };
 
   // Get current question and answer
-  const currentQuestion = categoryQuestions[selectedCategory]?.[currentQuestionIndex];
+  const currentQuestion =
+    categoryQuestions[selectedCategory]?.[currentQuestionIndex];
   const currentAnswer = answeredQuestions[currentQuestionIndex];
 
   // Render the quiz component
@@ -136,15 +142,20 @@ export default function App() {
             <p className="final-score">
               Your final score: {score} out of {QUIZ_LENGTH}
             </p>
-            <button onClick={resetQuiz}>Start New Quiz</button> {/* Button to start new quiz */}
+            <button onClick={resetQuiz}>Start New Quiz</button>{" "}
+            {/* Button to start new quiz */}
           </div>
         ) : currentQuestion ? (
           <>
             {/* Current question */}
             <div className="question-header">
-              <div className="score-info">Score: {score}</div> {/* Current score */}
+              <div className="score-info">Score: {score}</div>{" "}
+              {/* Current score */}
               <h2>{currentQuestion.question}</h2> {/* Current question */}
-              <div className="attempted-info">Attempted: {attemptedQuestions}</div> {/* Number of questions attempted */}
+              <div className="attempted-info">
+                Attempted: {attemptedQuestions}
+              </div>{" "}
+              {/* Number of questions attempted */}
             </div>
             {/* Current question and answer */}
             <Question
@@ -154,29 +165,31 @@ export default function App() {
               isAnswered={currentAnswer !== undefined}
               selectedAnswerIndex={currentAnswer?.selectedAnswerIndex}
             />
+            {/* Progress indicator */}
+            <div className="progress">
+              Question {currentQuestionIndex + 1} of {QUIZ_LENGTH}
+            </div>
             {/* Navigation buttons */}
             <div className="navigation">
               <button
+                className="nav-button"
                 onClick={() => moveQuestion(-1)}
                 disabled={currentQuestionIndex === 0}
               >
-                Previous
+                <span className="button-text">Previous</span>
               </button>
               <button
+                className="nav-button"
                 onClick={() => moveQuestion(1)}
                 disabled={currentQuestionIndex === QUIZ_LENGTH - 1}
               >
-                Next
+                <span className="button-text">Next</span>
               </button>
             </div>
           </>
         ) : (
           <div>Loading questions...</div>
         )}
-        {/* Progress indicator */}
-        <div className="progress">
-          Question {currentQuestionIndex + 1} of {QUIZ_LENGTH}
-        </div>
       </div>
     </div>
   );
