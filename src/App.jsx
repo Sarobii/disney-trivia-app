@@ -24,71 +24,80 @@ function shuffleQuestions(questions) {
 }
 
 export default function App() {
-  const [categoryQuestions, setCategoryQuestions] = useState({});
-  const [selectedCategory, setSelectedCategory] = useState("Mix");
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [attemptedQuestions, setAttemptedQuestions] = useState(0);
-  const [answeredQuestions, setAnsweredQuestions] = useState({});
-  const [quizCompleted, setQuizCompleted] = useState(false);
+  // State variables to keep track of quiz state
+  const [categoryQuestions, setCategoryQuestions] = useState({}); // Questions for the current category
+  const [selectedCategory, setSelectedCategory] = useState("Mix"); // Currently selected category
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Index of the current question
+  const [score, setScore] = useState(0); // Current score
+  const [attemptedQuestions, setAttemptedQuestions] = useState(0); // Number of questions attempted
+  const [answeredQuestions, setAnsweredQuestions] = useState({}); // Previously answered questions
+  const [quizCompleted, setQuizCompleted] = useState(false); // Quiz completion status
   
 
+  // Generate questions for the current category when the component mounts
   useEffect(() => {
     generateQuestions();
   }, []);
 
+  // Generate questions for the current category
   const generateQuestions = () => {
-    const shuffledQuestions = shuffleQuestions(shuffleArray(questions));
+    const shuffledQuestions = shuffleQuestions(shuffleArray(questions)); // Shuffle questions
     const categoryQuestionsObj = categories.reduce((acc, category) => {
       if (category === "Mix") {
-        acc[category] = shuffledQuestions.slice(0, QUIZ_LENGTH);
+        acc[category] = shuffledQuestions.slice(0, QUIZ_LENGTH); // Get QUIZ_LENGTH questions for mix category
       } else {
-        const filteredQuestions = shuffledQuestions.filter(q => q.category === category);
-        acc[category] = filteredQuestions.slice(0, QUIZ_LENGTH);
+        const filteredQuestions = shuffledQuestions.filter(q => q.category === category); // Filter questions by category
+        acc[category] = filteredQuestions.slice(0, QUIZ_LENGTH); // Get QUIZ_LENGTH questions for other categories
       }
       return acc;
     }, {});
-    setCategoryQuestions(categoryQuestionsObj);
+    setCategoryQuestions(categoryQuestionsObj); // Set category questions state
   };
 
+  // Handle answer selection
   const handleAnswer = (isCorrect, selectedAnswerIndex) => {
-    if (!(currentQuestionIndex in answeredQuestions)) {
-      setAttemptedQuestions((prev) => prev + 1);
-      if (isCorrect) {
-        setScore((prevScore) => prevScore + 1);
+    if (!(currentQuestionIndex in answeredQuestions)) { // If question not already answered
+      setAttemptedQuestions((prev) => prev + 1); // Increment attempted questions count
+      if (isCorrect) { // If answer is correct
+        setScore((prevScore) => prevScore + 1); // Increment score
       }
-      setAnsweredQuestions((prev) => ({
+      setAnsweredQuestions((prev) => ({ // Update answered questions state
         ...prev,
         [currentQuestionIndex]: { isCorrect, selectedAnswerIndex },
       }));
 
-      if (Object.keys(answeredQuestions).length + 1 === QUIZ_LENGTH) {
-        setQuizCompleted(true);
+      if (Object.keys(answeredQuestions).length + 1 === QUIZ_LENGTH) { // If all questions answered
+        setQuizCompleted(true); // Set quiz completion status
       }
     }
   };
 
+  // Move to previous or next question
   const moveQuestion = (direction) => {
     setCurrentQuestionIndex((prevIndex) => {
-      const newIndex = prevIndex + direction;
-      return Math.max(0, Math.min(newIndex, QUIZ_LENGTH - 1));
+      const newIndex = prevIndex + direction; // Calculate new question index
+      return Math.max(0, Math.min(newIndex, QUIZ_LENGTH - 1)); // Keep index within range
     });
   };
 
+  // Reset quiz to start state
   const resetQuiz = () => {
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setAttemptedQuestions(0);
-    setAnsweredQuestions({});
-    setQuizCompleted(false);
-    generateQuestions();
+    setCurrentQuestionIndex(0); // Reset current question index
+    setScore(0); // Reset score
+    setAttemptedQuestions(0); // Reset attempted questions count
+    setAnsweredQuestions({}); // Reset answered questions state
+    setQuizCompleted(false); // Reset quiz completion status
+    generateQuestions(); // Generate new questions
   };
 
+  // Get current question and answer
   const currentQuestion = categoryQuestions[selectedCategory]?.[currentQuestionIndex];
   const currentAnswer = answeredQuestions[currentQuestionIndex];
 
+  // Render the quiz component
   return (
     <div className="App">
+      {/* Category navigation */}
       <div className="category-nav">
         {categories.map((category) => (
           <div
@@ -97,14 +106,15 @@ export default function App() {
               category === selectedCategory ? "selected" : ""
             }`}
             onClick={() => {
-              setSelectedCategory(category);
-              resetQuiz();
+              setSelectedCategory(category); // Set selected category when clicked
+              resetQuiz(); // Reset quiz to start state
             }}
           >
             {category}
           </div>
         ))}
       </div>
+      {/* Quiz header */}
       <div className="App-header">
         <div className="logo-container">
           <img
@@ -116,23 +126,27 @@ export default function App() {
         </div>
       </div>
 
+      {/* Quiz content */}
       <div className="content">
+        {/* Quiz completion status */}
         {quizCompleted ? (
           <div className="quiz-end">
             <h2>Quiz Completed!</h2>
-            <Confetti />
+            <Confetti /> {/* Confetti animation */}
             <p className="final-score">
               Your final score: {score} out of {QUIZ_LENGTH}
             </p>
-            <button onClick={resetQuiz}>Start New Quiz</button>
+            <button onClick={resetQuiz}>Start New Quiz</button> {/* Button to start new quiz */}
           </div>
         ) : currentQuestion ? (
           <>
+            {/* Current question */}
             <div className="question-header">
-              <div className="score-info">Score: {score}</div>
-              <h2>{currentQuestion.question}</h2>
-              <div className="attempted-info">Attempted: {attemptedQuestions}</div>
+              <div className="score-info">Score: {score}</div> {/* Current score */}
+              <h2>{currentQuestion.question}</h2> {/* Current question */}
+              <div className="attempted-info">Attempted: {attemptedQuestions}</div> {/* Number of questions attempted */}
             </div>
+            {/* Current question and answer */}
             <Question
               key={currentQuestionIndex}
               {...currentQuestion}
@@ -140,6 +154,7 @@ export default function App() {
               isAnswered={currentAnswer !== undefined}
               selectedAnswerIndex={currentAnswer?.selectedAnswerIndex}
             />
+            {/* Navigation buttons */}
             <div className="navigation">
               <button
                 onClick={() => moveQuestion(-1)}
@@ -158,6 +173,7 @@ export default function App() {
         ) : (
           <div>Loading questions...</div>
         )}
+        {/* Progress indicator */}
         <div className="progress">
           Question {currentQuestionIndex + 1} of {QUIZ_LENGTH}
         </div>
