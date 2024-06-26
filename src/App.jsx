@@ -23,7 +23,7 @@ function shuffleQuestions(questions) {
 }
 
 export default function App() {
-  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [categoryQuestions, setCategoryQuestions] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("Mix");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -31,17 +31,18 @@ export default function App() {
   const [answeredQuestions, setAnsweredQuestions] = useState({});
 
   useEffect(() => {
-    if (questions) {
-      setShuffledQuestions(
-        shuffleQuestions(shuffleArray(questions)).slice(0, QUIZ_LENGTH)
-      );
-    }
+    const shuffledQuestions = shuffleQuestions(shuffleArray(questions));
+    const categoryQuestionsObj = categories.reduce((acc, category) => {
+      if (category === "Mix") {
+        acc[category] = shuffledQuestions.slice(0, QUIZ_LENGTH);
+      } else {
+        const filteredQuestions = shuffledQuestions.filter(q => q.category === category);
+        acc[category] = filteredQuestions.slice(0, QUIZ_LENGTH);
+      }
+      return acc;
+    }, {});
+    setCategoryQuestions(categoryQuestionsObj);
   }, []);
-
-  const filteredQuestions =
-    selectedCategory === "Mix"
-      ? shuffledQuestions
-      : shuffledQuestions.filter((q) => q.category === selectedCategory);
 
   const handleAnswer = (isCorrect, selectedAnswerIndex) => {
     if (!(currentQuestionIndex in answeredQuestions)) {
@@ -59,25 +60,18 @@ export default function App() {
   const moveQuestion = (direction) => {
     setCurrentQuestionIndex((prevIndex) => {
       const newIndex = prevIndex + direction;
-      return Math.max(0, Math.min(newIndex, filteredQuestions.length - 1));
+      return Math.max(0, Math.min(newIndex, QUIZ_LENGTH - 1));
     });
   };
 
   const resetQuiz = () => {
-    setShuffledQuestions(
-      shuffleQuestions(shuffleArray(questions)).slice(0, QUIZ_LENGTH)
-    );
     setCurrentQuestionIndex(0);
     setScore(0);
     setAttemptedQuestions(0);
     setAnsweredQuestions({});
   };
 
-  if (!questions || questions.length === 0) {
-    return <div>Failed to load questions</div>;
-  }
-
-  const currentQuestion = filteredQuestions[currentQuestionIndex];
+  const currentQuestion = categoryQuestions[selectedCategory]?.[currentQuestionIndex];
   const currentAnswer = answeredQuestions[currentQuestionIndex];
 
   return (
@@ -128,7 +122,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => moveQuestion(1)}
-                disabled={currentQuestionIndex === filteredQuestions.length - 1}
+                disabled={currentQuestionIndex === QUIZ_LENGTH - 1}
               >
                 Next
               </button>
@@ -144,7 +138,7 @@ export default function App() {
           </div>
         )}
         <div className="progress">
-          Question {currentQuestionIndex + 1} of {filteredQuestions.length}
+          Question {currentQuestionIndex + 1} of {QUIZ_LENGTH}
         </div>
         <div className="score">
           Score: {score}/{attemptedQuestions} correct

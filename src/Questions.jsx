@@ -34,8 +34,7 @@ function Question({ question, answers, onAnswered, isAnswered, selectedAnswerInd
             <p className="correct">Correct!</p>
           ) : (
             <p className="wrong">
-              Incorrect. The correct answer was: {answers.find(a => a.isCorrect).text}
-            </p>
+              Incorrect. &#128542;</p>
           )}
         </div>
       )}
