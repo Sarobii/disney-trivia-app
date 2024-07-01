@@ -3,6 +3,7 @@ import "./App.css";
 import Question from "../Components/Questions.jsx";
 import questions from "../Components/disney-trivia-questions.jsx";
 import Confetti from "react-confetti";
+import useSound from "use-sound";
 
 const categories = ["Mix", "Characters", "Movies", "Settings", "Songs"];
 const QUIZ_LENGTH = 10;
@@ -32,6 +33,12 @@ export default function App() {
   const [attemptedQuestions, setAttemptedQuestions] = useState(0); // Number of questions attempted
   const [answeredQuestions, setAnsweredQuestions] = useState({}); // Previously answered questions
   const [quizCompleted, setQuizCompleted] = useState(false); // Quiz completion status
+
+  const [gameOver] = useSound("public/brass-fanfare.mp3");
+  const [rightAnswer] = useSound(
+    "public/mixkit-arcade-game-complete-or-approved-mission-205.wav"
+  );
+  const [wrongAnswer] = useSound("public/negative_beeps-6008.mp3");
 
   // Generate questions for the current category when the component mounts
   useEffect(() => {
@@ -63,6 +70,10 @@ export default function App() {
       if (isCorrect) {
         // If answer is correct
         setScore((prevScore) => prevScore + 1); // Increment score
+        rightAnswer(); // Play the sound effect
+      } else {
+        // If answer is wrong
+        wrongAnswer(); // Play the sound effect
       }
       setAnsweredQuestions((prev) => ({
         // Update answered questions state
@@ -73,6 +84,7 @@ export default function App() {
       if (Object.keys(answeredQuestions).length + 1 === QUIZ_LENGTH) {
         // If all questions answered
         setQuizCompleted(true); // Set quiz completion status
+        gameOver(); // Play the sound effect
       }
     }
   };
